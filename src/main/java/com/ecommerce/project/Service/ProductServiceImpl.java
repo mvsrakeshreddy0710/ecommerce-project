@@ -101,4 +101,9 @@ public class ProductServiceImpl implements ProductService{
 
         return modelMapper.map(savedProduct, ProductDTO.class);
     }
+
+    @Override
+    public ProductDTO deleteProduct(Long productId) {
+        return null;
+    }
 }
