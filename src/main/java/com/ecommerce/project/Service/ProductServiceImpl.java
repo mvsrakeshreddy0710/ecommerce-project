@@ -10,8 +10,16 @@ import com.ecommerce.project.repositories.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ProductServiceImpl implements ProductService{
@@ -111,4 +119,72 @@ public class ProductServiceImpl implements ProductService{
         productRepository.delete(product);
         return modelMapper.map(product, ProductDTO.class);
     }
+
+    @Override
+    public ProductDTO updateProductImage(Long productId, MultipartFile image) throws IOException {
+        //Get the product from DB
+        Product productFromDb = productRepository.findById(productId)
+                .orElseThrow(()-> new ResourceNotFoundException("Product","productId",productId));
+        //Upload image to server
+        //Get the file name of uploaded image
+        String path = "images/";
+        String fileName = uploadImage(path, image);
+
+        //Updating the new file name to the product
+        productFromDb.setImage(fileName);
+
+        //Save updated product
+        Product updatedProduct = productRepository.save(productFromDb);
+
+        //return DTO after mapping product to DTO
+        return modelMapper.map(updatedProduct, ProductDTO.class);
+
+    }
+
+    private String uploadImage(String path, MultipartFile file) throws IOException {
+        //Get the file names of current/ original file
+        String originalFilename = file.getOriginalFilename();
+
+        //Generate a unique file name
+        String randomId = UUID.randomUUID().toString();
+        //This can give newfile name mat.jpg --> 1234 --> 1234.jpg
+        String fileName = randomId.concat(originalFilename.substring(originalFilename.lastIndexOf('.')));
+       //String filePath = path + File.pathSeparator + fileName;
+        String filePath = path + File.separator + fileName;
+        //Check if path exist and create
+        File folder = new File(path);
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+        //Upload to server
+        //Files.copy(file.getInputStream(), Paths.get(filePath));
+        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+
+        //returning the file name
+        return fileName;
+    }
+//private String uploadImage(String path, MultipartFile file) throws IOException {
+//
+//    String originalFilename = file.getOriginalFilename();
+//
+//    String randomId = UUID.randomUUID().toString();
+//
+//    String fileName = randomId.concat(
+//            originalFilename.substring(originalFilename.lastIndexOf('.'))
+//    );
+//
+//    // Create directory if not exists
+//    File folder = new File(path);
+//    if (!folder.exists()) {
+//        folder.mkdirs(); // use mkdirs() ✅
+//    }
+//
+//    // FULL SAFE PATH
+//    Path filePath = Paths.get(path, fileName);
+//
+//    // SAVE FILE (IMPORTANT FIX)
+//    Files.write(filePath, file.getBytes());
+//
+//    return fileName;
+//}
 }
