@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.Getter;
 import lombok.ToString;
 
 import java.util.ArrayList;
@@ -15,6 +17,8 @@ import java.util.List;
 @Table(name = "addresses")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class Address {
 
     @Id
@@ -22,42 +26,51 @@ public class Address {
     private Long addressId;
 
 
+
     @NotBlank
     @Size(min = 5, message = "Street name must be atleast 5 characters")
     private String street;
 
 
+
     @NotBlank
     @Size(min = 5, message = "Building name must be atleast 5 characters")
-    private String buildingname;
+    private String buildingName;
+
 
     @NotBlank
     @Size(min = 5, message = "City name must be atleast 4 characters")
     private String  city;
 
+
     @NotBlank
     @Size(min = 5, message = "State name must be atleast 2 characters")
     private String state;
+
 
     @NotBlank
     @Size(min = 5, message = "Country name must be atleast 2 characters")
     private String country;
 
     @NotBlank
-    @Size(min = 5, message = "Pincode must be atleast 6 characters")
+    @Size(min = 5, message = "Pincode must be atleast 5 characters")
     private String pincode;
 
-    @ToString.Exclude
-    @ManyToMany(mappedBy = "addresses")
-    private List<User> users =  new ArrayList<User>();
+ 
 
-    public Address(String street, String buildingname, String city, String state, String country, String pincode) {
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+
+    public Address(String street, String buildingName, String city, String state, String country, String pincode) {
         this.street = street;
-        this.buildingname = buildingname;
+        this.buildingName = buildingName;
         this.city = city;
         this.state = state;
         this.country = country;
         this.pincode = pincode;
-
     }
+
+
 }
